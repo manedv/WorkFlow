@@ -23,6 +23,8 @@ model User {
   reportedIssues          Issue[]              @relation("IssueReporter")
   assignedIssues          Issue[]              @relation("IssueAssignee")
   activities              Activity[]
+  comments                Comment[]
+  notifications           Notification[]
 
   @@index([email])
   @@map("users")
@@ -74,6 +76,7 @@ model Project {
   members      ProjectMember[]
   statuses     Status[]
   issues       Issue[]
+  sprints      Sprint[]
 
   @@unique([organizationId, key])
   @@index([organizationId])
@@ -125,18 +128,23 @@ model Issue {
   reporterId    String
   assigneeId    String?
   parentIssueId String?
+  sprintId      String?
   storyPoints   Int?
+  position      Int      @default(0)
   dueDate       DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status     Status     @relation(fields: [statusId], references: [id])
-  reporter   User       @relation("IssueReporter", fields: [reporterId], references: [id])
-  assignee   User?      @relation("IssueAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
-  parentIssue Issue?    @relation("SubIssues", fields: [parentIssueId], references: [id], onDelete: SetNull)
-  subIssues   Issue[]   @relation("SubIssues")
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      Status       @relation(fields: [statusId], references: [id])
+  reporter    User         @relation("IssueReporter", fields: [reporterId], references: [id])
+  assignee    User?        @relation("IssueAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  parentIssue Issue?       @relation("SubIssues", fields: [parentIssueId], references: [id], onDelete: SetNull)
+  subIssues   Issue[]      @relation("SubIssues")
+  sprint      Sprint?      @relation(fields: [sprintId], references: [id], onDelete: SetNull)
   activities  Activity[]
+  comments    Comment[]
+  attachments Attachment[]
 
   @@unique([projectId, issueNumber])
   @@index([projectId])
@@ -144,6 +152,7 @@ model Issue {
   @@index([assigneeId])
   @@index([reporterId])
   @@index([parentIssueId])
+  @@index([sprintId])
   @@map("issues")
 }
 
@@ -163,4 +172,71 @@ model Activity {
   @@index([issueId])
   @@index([userId])
   @@map("activities")
+}
+
+model Sprint {
+  id        String   @id @default(cuid())
+  name      String
+  goal      String?
+  projectId String
+  status    String   @default("PLANNING")
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
+
+  @@index([projectId])
+  @@map("sprints")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  issueId   String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id])
+
+  @@index([issueId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  issueId   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId])
+  @@map("notifications")
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  issueId      String
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@map("attachments")
 }

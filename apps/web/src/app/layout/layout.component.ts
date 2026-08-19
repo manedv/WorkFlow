@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../core/services/auth.service';
+import { NotificationsPanelComponent } from '../features/notifications/notifications-panel.component';
 
 interface NavItem {
   label: string;
@@ -30,6 +31,7 @@ interface NavItem {
     MatButtonModule,
     MatMenuModule,
     MatDividerModule,
+    NotificationsPanelComponent,
   ],
   template: `
     <div class="app-layout">
@@ -45,6 +47,7 @@ interface NavItem {
         <span class="spacer"></span>
 
         <div class="toolbar-right">
+          <app-notifications-panel></app-notifications-panel>
           <button mat-icon-button [matMenuTriggerFor]="userMenu">
             <mat-icon>account_circle</mat-icon>
           </button>

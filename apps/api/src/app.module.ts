@@ -6,6 +6,10 @@ import { UsersModule } from './users/users.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { ProjectsModule } from './projects/projects.module';
 import { IssuesModule } from './issues/issues.module';
+import { SprintsModule } from './sprints/sprints.module';
+import { CommentsModule } from './comments/comments.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { AttachmentsModule } from './attachments/attachments.module';
 
 @Module({
   imports: [
@@ -19,6 +23,10 @@ import { IssuesModule } from './issues/issues.module';
     OrganizationsModule,
     ProjectsModule,
     IssuesModule,
+    SprintsModule,
+    CommentsModule,
+    NotificationsModule,
+    AttachmentsModule,
   ],
 })
 export class AppModule {}

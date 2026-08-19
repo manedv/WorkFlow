@@ -14,6 +14,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { IssueService, Issue, Status } from '../../../core/services/issue.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { IssueCommentsComponent } from '../issue-comments/issue-comments.component';
+import { IssueActivityComponent } from '../issue-activity/issue-activity.component';
 
 @Component({
   selector: 'app-issue-detail',
@@ -31,6 +33,8 @@ import { NotificationService } from '../../../core/services/notification.service
     MatProgressSpinnerModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    IssueCommentsComponent,
+    IssueActivityComponent,
   ],
   template: `
     @if (loading()) {
@@ -94,6 +98,9 @@ import { NotificationService } from '../../../core/services/notification.service
                 }
               </div>
             }
+
+            <app-issue-comments [issueId]="issue()!.id"></app-issue-comments>
+            <app-issue-activity [issueId]="issue()!.id"></app-issue-activity>
           </div>
 
           <div class="issue-sidebar">

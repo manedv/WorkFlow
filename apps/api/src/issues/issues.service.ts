@@ -265,6 +265,16 @@ export class IssuesService {
     return { total, byStatus: counts };
   }
 
+  async reorder(issueIds: string[], statusId: string, userId: string) {
+    const updates = issueIds.map((id, index) =>
+      this.prisma.issue.update({
+        where: { id },
+        data: { position: index, statusId },
+      }),
+    );
+    await this.prisma.$transaction(updates);
+  }
+
   private async ensureProjectAccess(projectId: string, userId: string, _roles?: string[]) {
     const membership = await this.prisma.projectMember.findUnique({
       where: { projectId_userId: { projectId, userId } },

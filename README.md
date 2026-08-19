@@ -132,7 +132,11 @@ WorkFlow/
 │   │       ├── users/          # User management
 │   │       ├── organizations/  # Organization endpoints
 │   │       ├── projects/       # Project CRUD + member management
-│   │       ├── issues/         # Issue CRUD, status, activity tracking
+│   │       ├── issues/         # Issue CRUD, status, activity, bulk ops
+│   │       ├── sprints/        # Sprint management & backlog
+│   │       ├── comments/       # Issue comments
+│   │       ├── notifications/  # In-app notifications
+│   │       ├── attachments/    # File upload/download
 │   │       ├── prisma/         # Prisma service module
 │   │       ├── common/         # Filters, decorators
 │   │       ├── app.module.ts
@@ -145,10 +149,12 @@ WorkFlow/
 │           │   ├── auth/       # Login & register pages
 │           │   ├── dashboard/  # Dashboard view
 │           │   ├── projects/   # Project list, overview, settings
-│           │   ├── issues/     # Board, issue detail, create dialog
+│           │   ├── issues/     # Board, issue detail, comments, activity
+│           │   ├── sprints/    # Backlog & sprint management
+│           │   ├── notifications/ # Notification panel
 │           │   ├── settings/   # User settings page
 │           │   └── placeholder/ # Future feature placeholder
-│           ├── layout/         # App shell (toolbar + sidebar)
+│           ├── layout/         # App shell (toolbar + sidebar + notifications)
 │           ├── shared/         # Confirm dialog, shared components
 │           └── app.routes.ts   # Route definitions
 │
@@ -157,7 +163,7 @@ WorkFlow/
 │   ├── migrations/             # Migration history
 │   └── seed.ts                 # Seed data script
 │
-├── storage/                    # File storage (future use)
+├── storage/                    # File uploads storage
 ├── .env                        # Environment variables
 ├── .env.example                # Environment template
 └── package.json                # Root scripts
@@ -201,13 +207,57 @@ WorkFlow/
 | GET    | /api/projects/:projectId/issues       | List project issues      | Yes  |
 | POST   | /api/projects/:projectId/issues       | Create issue             | Yes  |
 | GET    | /api/projects/:projectId/statuses     | Get project statuses     | Yes  |
+| POST   | /api/projects/:projectId/statuses     | Create custom status     | Yes  |
+| PATCH  | /api/projects/:projectId/statuses/reorder | Reorder statuses     | Yes  |
+| PATCH  | /api/projects/:projectId/statuses/:id | Update status            | Yes  |
+| DELETE | /api/projects/:projectId/statuses/:id | Delete status            | Yes  |
 | GET    | /api/projects/:projectId/issues/counts| Issue counts by status   | Yes  |
 | GET    | /api/issues/:id                       | Get issue detail         | Yes  |
+| GET    | /api/issues/:id/activity              | Get issue activity log   | Yes  |
 | PATCH  | /api/issues/:id                       | Update issue             | Yes  |
 | DELETE | /api/issues/:id                       | Delete issue             | Yes  |
 | PATCH  | /api/issues/:id/status                | Change issue status      | Yes  |
 | PATCH  | /api/issues/:id/assignee              | Change assignee          | Yes  |
 | PATCH  | /api/issues/:id/priority              | Change priority          | Yes  |
+| PATCH  | /api/issues/reorder                   | Reorder issues in column | Yes  |
+| PATCH  | /api/issues/bulk                      | Bulk update issues       | Yes  |
+
+### Sprints
+| Method | Endpoint                              | Description              | Auth |
+| ------ | ------------------------------------- | ------------------------ | ---- |
+| GET    | /api/projects/:projectId/sprints      | List project sprints     | Yes  |
+| POST   | /api/projects/:projectId/sprints      | Create sprint            | Yes  |
+| GET    | /api/projects/:projectId/backlog      | Get backlog issues       | Yes  |
+| GET    | /api/sprints/:id                      | Get sprint with issues   | Yes  |
+| PATCH  | /api/sprints/:id                      | Update sprint            | Yes  |
+| POST   | /api/sprints/:id/start                | Start sprint             | Yes  |
+| POST   | /api/sprints/:id/complete             | Complete sprint          | Yes  |
+| DELETE | /api/sprints/:id                      | Delete sprint            | Yes  |
+| POST   | /api/sprints/:id/issues/:issueId      | Add issue to sprint      | Yes  |
+| DELETE | /api/sprints/:id/issues/:issueId      | Remove issue from sprint | Yes  |
+
+### Comments
+| Method | Endpoint                              | Description              | Auth |
+| ------ | ------------------------------------- | ------------------------ | ---- |
+| GET    | /api/issues/:issueId/comments         | List issue comments      | Yes  |
+| POST   | /api/issues/:issueId/comments         | Add comment              | Yes  |
+| PATCH  | /api/comments/:id                     | Edit comment             | Yes  |
+| DELETE | /api/comments/:id                     | Delete comment           | Yes  |
+
+### Notifications
+| Method | Endpoint                              | Description              | Auth |
+| ------ | ------------------------------------- | ------------------------ | ---- |
+| GET    | /api/notifications                    | List notifications       | Yes  |
+| GET    | /api/notifications/count              | Unread count             | Yes  |
+| PATCH  | /api/notifications/:id/read           | Mark as read             | Yes  |
+| PATCH  | /api/notifications/read-all           | Mark all as read         | Yes  |
+
+### Attachments
+| Method | Endpoint                              | Description              | Auth |
+| ------ | ------------------------------------- | ------------------------ | ---- |
+| GET    | /api/issues/:issueId/attachments      | List issue attachments   | Yes  |
+| POST   | /api/issues/:issueId/attachments      | Upload file              | Yes  |
+| DELETE | /api/attachments/:id                  | Delete attachment        | Yes  |
 
 ## Phase 1 Features
 
@@ -253,27 +303,45 @@ WorkFlow/
 | dueDate       | DateTime?| Target completion date               |
 | parentIssue   | Relation | Parent issue (for sub-tasks)         |
 
+## Phase 3 Features
+
+- **Sprint Management** — Create, start, and complete sprints with drag-and-drop backlog planning
+- **Backlog View** — Drag issues between backlog and sprints at `/projects/:id/backlog`
+- **Comments** — Add, edit, and delete comments on issues with author controls
+- **Activity Timeline** — Visual activity history on each issue (created, updated, status/assignee/priority changes, comments, attachments)
+- **Notifications** — In-app notification bell with unread count, auto-triggered on comments and assignments
+- **Attachments** — File upload (up to 10MB) and delete on issues, stored in `/storage/uploads/`
+- **Custom Statuses** — Create, rename, reorder, and delete project statuses (admin only)
+- **Column Reordering** — Reorder issues within board columns via API
+- **Bulk Operations** — Batch update status, priority, assignee, or sprint for multiple issues
+- **Role-Based Permissions** — Admin-only operations for status CRUD and destructive actions; comment authors can edit/delete their own
+
+### Sprint States
+
+| State     | Description                     |
+| --------- | ------------------------------- |
+| PLANNING  | Default — issues being planned  |
+| ACTIVE    | Sprint in progress (one at a time) |
+| COMPLETED | Sprint finished, issues released |
+
 ## Known Limitations
 
-- No sprint management (Phase 3)
-- No comments on issues (Phase 3)
-- No notifications (Phase 3)
-- No advanced permissions (Phase 3)
-- No real-time updates (future)
-- No file attachments (future)
-- No JQL / advanced search (future)
-- Activity UI not yet built (database foundation only)
+- No real-time updates / WebSocket push
+- No JQL / advanced full-text search
+- No velocity/burndown charts
+- No email notifications (in-app only)
+- No threaded/nested comments
 - User profile editing not yet implemented
 - No password change flow
 - No email verification
 - SQLite for development only (migrate to PostgreSQL for production)
 
-## Recommended Phase 3 Work
+## Recommended Phase 4 Work
 
-1. **Sprints** — Sprint creation, planning, velocity tracking
-2. **Comments** — Threaded comments on issues
-3. **Activity Timeline** — UI for viewing issue history
-4. **Notifications** — In-app notifications for assignments and mentions
-5. **Advanced Permissions** — Role-based access control per action
-6. **Attachments** — File uploads on issues
-7. **Bulk Operations** — Multi-select and batch update issues
+1. **Real-time Updates** — WebSocket for live board updates
+2. **Advanced Search** — Full-text search / JQL-like query
+3. **Burndown Charts** — Sprint velocity and progress tracking
+4. **Email Notifications** — Email digests for assignments and mentions
+5. **Custom Fields** — User-defined fields on issues
+6. **Workflow Automation** — Rules engine for auto-transitions
+7. **Audit Log** — Organization-level activity audit
