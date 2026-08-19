@@ -1,0 +1,36 @@
+{
+  "name": "workflow",
+  "version": "1.0.0",
+  "description": "WorkFlow — Project Management Platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names api,web --prefix-colors blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm --prefix apps/api run start:dev",
+    "dev:web": "npm --prefix apps/web start",
+    "build": "npm run build:api && npm run build:web",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "test": "npm --prefix apps/api run test",
+    "lint": "npm --prefix apps/api run lint",
+    "format": "prettier --write \"apps/**/*.{ts,html,scss,json}\" \"prisma/**/*.ts\"",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate dev",
+    "db:migrate:prod": "npx prisma migrate deploy",
+    "db:seed": "npx ts-node prisma/seed.ts",
+    "db:studio": "npx prisma studio",
+    "db:reset": "npx prisma migrate reset --force",
+    "postinstall": "npx prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "bcrypt": "^5.1.0",
+    "concurrently": "^9.1.0",
+    "prettier": "^3.4.0",
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.5.0"
+  }
+}
