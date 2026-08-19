@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.angular/
+
+# Database
+*.db
+*.db-journal
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Storage uploads
+storage/uploads/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
