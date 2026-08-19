@@ -56,6 +56,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'projects/:id/backlog',
+        loadComponent: () =>
+          import('./features/sprints/backlog/backlog.component').then(
+            (m) => m.BacklogComponent,
+          ),
+      },
+      {
         path: 'issues/:id',
         loadComponent: () =>
           import('./features/issues/issue-detail/issue-detail.component').then(

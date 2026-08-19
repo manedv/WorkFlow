@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { IssuesService } from './issues.service';
+import { ActivityService } from './activity.service';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,7 +19,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class IssuesController {
-  constructor(private readonly issuesService: IssuesService) {}
+  constructor(
+    private readonly issuesService: IssuesService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   @Get('projects/:projectId/issues')
   async findAllByProject(
@@ -120,5 +124,22 @@ export class IssuesController {
   ) {
     const issue = await this.issuesService.updatePriority(id, priority, user.userId);
     return { success: true, data: issue };
+  }
+
+  @Get('issues/:id/activity')
+  async getActivity(
+    @Param('id') id: string,
+  ) {
+    const activities = await this.activityService.findByIssue(id);
+    return { success: true, data: activities };
+  }
+
+  @Patch('issues/reorder')
+  async reorder(
+    @Body() body: { issueIds: string[]; statusId: string },
+    @CurrentUser() user: { userId: string },
+  ) {
+    await this.issuesService.reorder(body.issueIds, body.statusId, user.userId);
+    return { success: true, data: { message: 'Reordered' } };
   }
 }
